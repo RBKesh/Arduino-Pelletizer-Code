@@ -1,0 +1,158 @@
+// This code is for the Arduino that powers the Open Source Recycled Plastic Pelletizer //
+#include <Stepper.h> 
+
+int stepsPerRevolution=2048; 
+
+int motSpeed=15; 
+
+int dt=500; 
+
+int buttonPin=2; 
+
+int motDir=1; 
+
+int buttonValNew; 
+
+int buttonValOld=1; 
+
+Stepper myStepperOne(stepsPerRevolution, 8,10,9,11); 
+
+Stepper myStepperTwo(stepsPerRevolution, 4,5,6,7); 
+
+int Limitswitch =2; 
+
+int REDLED = 13; 
+
+#include <Wire.h> 
+
+#include <Adafruit_GFX.h> 
+
+#include <Adafruit_SSD1306.h> 
+
+#define SCREEN_WIDTH 128 
+
+#define SCREEN_HEIGHT 64 
+
+#define OLED_RESET    -1 
+
+#define SCREEN_ADDRESS 0x3C   // common address for this module 
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET); 
+
+ 
+
+void setup() { 
+
+  // put your setup code here, to run once: 
+
+Serial.begin(9600); 
+
+myStepperOne.setSpeed(motSpeed); 
+
+pinMode(Limitswitch, INPUT); 
+
+pinMode(REDLED, OUTPUT); 
+
+// Initialize OLED 
+
+  if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) { 
+
+    Serial.println(F("SSD1306 allocation failed")); 
+
+    while (1); 
+
+  } 
+
+  // Clear screen 
+
+  display.clearDisplay(); 
+
+ 
+
+  // Text settings 
+
+  display.setTextSize(1); 
+
+  display.setTextColor(SSD1306_WHITE); 
+
+  display.setCursor(0, 0); 
+
+ 
+
+  // Print message 
+
+  display.println(F("GME12864-11")); 
+
+  display.println(F("OLED Ready")); 
+
+  display.display(); 
+
+ 
+
+  delay(2000); 
+
+// Example drawing 
+
+  display.clearDisplay(); 
+
+  display.drawRect(0, 0, 128, 64, SSD1306_WHITE); 
+
+  display.drawLine(0, 0, 127, 63, SSD1306_WHITE); 
+
+  display.drawLine(127, 0, 0, 63, SSD1306_WHITE); 
+
+  display.display(); 
+
+} 
+
+void loop() { 
+
+  myStepperOne.step(motDir * 1); 
+
+myStepperTwo.step(motDir*1); 
+
+int State = digitalRead(Limitswitch); 
+
+if(State == HIGH){ 
+
+  static unsigned long lastDisplay = 0; 
+
+  if (millis() - lastDisplay > 200) {   // update OLED every 200 ms 
+
+    lastDisplay = millis(); 
+
+ 
+
+    display.clearDisplay(); 
+
+    display.setCursor(0, 0); 
+
+    display.println(F("Status: Running!")); 
+
+    display.display(); 
+
+     digitalWrite(REDLED, LOW); 
+
+  } 
+
+} 
+
+else{ 
+
+  display.clearDisplay(); 
+
+    display.setCursor(0, 0); 
+
+    display.println(F("Status:OFF!")); 
+
+    display.println(F("Check Case!")); 
+
+    display.display();  
+
+    digitalWrite(REDLED, HIGH); 
+
+} 
+
+ 
+
+}
